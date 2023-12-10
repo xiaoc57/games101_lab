@@ -20,6 +20,29 @@ Eigen::Matrix4f get_view_matrix(Eigen::Vector3f eye_pos)
     return view;
 }
 
+Eigen::Matrix4f get_rotation(Vector3f axis, float angle)
+{
+    Eigen::Matrix4f model = Eigen::Matrix4f::Identity();
+    float al = angle * MY_PI / 180.0f;
+
+    float cosa = std::cos(al);
+    float fcosa = 1 - std::cos(al);
+
+    float x = axis[0], y = axis[1], z = axis[2];
+    float l = std::sqrt(x*x+y*y+z*z);
+    // 归一化轴
+    x /= l, y /= l, z /= l;
+    float xx = x*x, yy = y*y, zz = z*z;
+
+    model <<    cosa + fcosa * xx, x * y * fcosa - std::sin(al) * z, x * z * fcosa + std::sin(al) * y, 0,
+                x * y * fcosa + std::sin(al) * z, cosa + yy * fcosa, y * z * fcosa - std::sin(al) * x, 0,
+                x * z * fcosa - std::sin(al) * y, y * z * fcosa + x * std::sin(al), cosa + zz * fcosa, 0,
+                0, 0, 0, 1;
+    return model;
+
+}
+
+
 Eigen::Matrix4f get_model_matrix(float rotation_angle)
 {
     Eigen::Matrix4f model = Eigen::Matrix4f::Identity();
@@ -119,7 +142,10 @@ int main(int argc, const char** argv)
     while (key != 27) {
         r.clear(rst::Buffers::Color | rst::Buffers::Depth);
 
-        r.set_model(get_model_matrix(angle));
+        // r.set_model(get_model_matrix(angle));
+        // get_rotation
+        Eigen::Vector3f axis = {1,0,0};
+        r.set_model(get_rotation(axis, angle));
         r.set_view(get_view_matrix(eye_pos));
         r.set_projection(get_projection_matrix(45, 1, 0.1, 50));
 
